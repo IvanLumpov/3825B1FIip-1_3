@@ -102,23 +102,27 @@ int TBitField::operator!=(const TBitField& bf) const {
 }
 
 TBitField TBitField::operator|(const TBitField& bf) {
-    if (BitLen != bf.BitLen) {
-        throw std::invalid_argument("TBitField::operator|: different lenght of field");
-    }
-    TBitField result(BitLen);
-    for (int i = 0; i < MemLen; ++i) {
-        result.pMem[i] = pMem[i] | bf.pMem[i];
+    int maxLen = (BitLen > bf.BitLen) ? BitLen : bf.BitLen;
+    TBitField result(maxLen);
+
+    const int bitsPerElem = static_cast<int>(sizeof(TELEM) * 8);
+
+    for (int i = 0; i < result.MemLen; ++i) {
+        TELEM val1 = (i < MemLen) ? pMem[i] : 0;
+        TELEM val2 = (i < bf.MemLen) ? bf.pMem[i] : 0;
+        result.pMem[i] = val1 | val2;
     }
     return result;
 }
 
 TBitField TBitField::operator&(const TBitField& bf) {
-    if (BitLen != bf.BitLen) {
-        throw std::invalid_argument("TBitField::operator&: different lenght of field");
-    }
-    TBitField result(BitLen);
-    for (int i = 0; i < MemLen; ++i) {
-        result.pMem[i] = pMem[i] & bf.pMem[i];
+    int maxLen = (BitLen > bf.BitLen) ? BitLen : bf.BitLen;
+    TBitField result(maxLen);
+
+    for (int i = 0; i < result.MemLen; ++i) {
+        TELEM val1 = (i < MemLen) ? pMem[i] : 0;
+        TELEM val2 = (i < bf.MemLen) ? bf.pMem[i] : 0;
+        result.pMem[i] = val1 & val2;
     }
     return result;
 }
@@ -137,20 +141,25 @@ TBitField TBitField::operator~() {
 }
 
 std::istream& operator>>(std::istream& istr, TBitField& bf) {
+    // тут создаем временное поле, чтобы не портить текущее при ошибке
+    TBitField temp(bf.BitLen);
+
     for (int i = 0; i < bf.BitLen; ++i) {
         char c;
         istr >> c;
-        if (istr.fail()) return istr;
-        if (c == '1') bf.SetBit(i);
-        else if (c == '0') bf.ClrBit(i);
-        else {
-            istr.setstate(std::ios::failbit);
+        if (istr.fail()) {
             return istr;
         }
+        if (c == '1') temp.SetBit(i);
+        else if (c == '0') temp.ClrBit(i);
+        else {
+            istr.setstate(std::ios::failbit);
+            return istr; // bf не меняется
+        }
     }
+    bf = temp;
     return istr;
 }
-
 std::ostream& operator<<(std::ostream& ostr, const TBitField& bf) {
     for (int i = 0; i < bf.BitLen; ++i) {
         ostr << bf.GetBit(i);

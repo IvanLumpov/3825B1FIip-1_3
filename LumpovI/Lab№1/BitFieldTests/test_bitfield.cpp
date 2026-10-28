@@ -44,14 +44,32 @@ TEST(TBitFieldExceptions, GetBitOutOfRange) {
     EXPECT_THROW(bf.GetBit(10), std::out_of_range);
 }
 
-TEST(TBitFieldExceptions, OrDifferentLengths) {
-    TBitField a(32), b(64);
-    EXPECT_THROW(a | b, std::invalid_argument);
+
+//корректная работа с разными длинами
+TEST(TBitFieldEdgeCases, OrWithDifferentLengths) {
+    TBitField a(8);
+    TBitField b(16);
+    a.SetBit(3);
+    b.SetBit(15);
+
+    TBitField c = a | b;
+    EXPECT_EQ(c.GetLength(), 16);
+    EXPECT_EQ(c.GetBit(3), 1); 
+    EXPECT_EQ(c.GetBit(15), 1);
+    EXPECT_EQ(c.GetBit(10), 0);
 }
 
-TEST(TBitFieldExceptions, AndDifferentLengths) {
-    TBitField a(32), b(64);
-    EXPECT_THROW(a & b, std::invalid_argument);
+TEST(TBitFieldEdgeCases, AndWithDifferentLengths) {
+    TBitField a(16);
+    TBitField b(8);
+    a.SetBit(3);
+    a.SetBit(15);
+    b.SetBit(3);
+
+    TBitField c = a & b;
+    EXPECT_EQ(c.GetLength(), 16);
+    EXPECT_EQ(c.GetBit(3), 1);
+    EXPECT_EQ(c.GetBit(15), 0);
 }
 
 //случайные тесты
@@ -120,4 +138,17 @@ TEST(TBitFieldFunctional, Input) {
     EXPECT_EQ(bf.GetBit(0), 1);
     EXPECT_EQ(bf.GetBit(1), 0);
     EXPECT_EQ(bf.GetBit(2), 1);
+}
+
+TEST(TBitFieldFunctional, OldState) {
+    TBitField bf(5);
+    bf.SetBit(1);
+
+    std::istringstream iss("1 0 X 1 1");
+    iss >> bf;
+
+    EXPECT_TRUE(iss.fail());
+    EXPECT_EQ(bf.GetBit(1), 1);
+    EXPECT_EQ(bf.GetBit(0), 0);
+    EXPECT_EQ(bf.GetBit(2), 0);
 }
