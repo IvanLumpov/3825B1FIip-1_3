@@ -47,6 +47,12 @@ TEST(TVectorTest, SizeMismatchThrows) {
     EXPECT_THROW(v1 * v2, std::invalid_argument);
 }
 
+TEST(TVectorTest, SubtractDifferentSizesThrows) {
+    TVector<int> v1(3);
+    TVector<int> v2(4);
+    EXPECT_THROW(v1 - v2, std::invalid_argument);
+}
+
 //случанйые тесты
 TEST(TVectorRandom, CommutativityAndAssociativity) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
@@ -192,6 +198,19 @@ TEST(TMatrixTest, CopyAndCompare) {
     m2[0][0] = 99;
     EXPECT_NE(m1, m2);
 }
+
+TEST(TMatrixTest, AddDifferentSizesThrows) {
+    TMatrix<int> m1(2);
+    TMatrix<int> m2(3);
+    EXPECT_THROW(m1 + m2, std::invalid_argument);
+}
+
+TEST(TMatrixTest, SubtractDifferentSizesThrows) {
+    TMatrix<int> m1(2);
+    TMatrix<int> m2(3);
+    EXPECT_THROW(m1 - m2, std::invalid_argument);
+}
+
 
 //случайные тесты
 TEST(TMatrixRandom, AdditionAndSubtractionProperties) {

@@ -223,12 +223,18 @@ bool TMatrix<ValType>::operator!=(const TMatrix& mt) const {
 
 template <class ValType>
 TMatrix<ValType>& TMatrix<ValType>::operator=(const TMatrix& mt) {
+    if (this == &mt) {
+        return *this;
+    }
     TVector<TVector<ValType>>::operator=(mt);
     return *this;
 }
 
 template <class ValType>
 TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt) const {
+    if (this->Size != mt.Size) {
+        throw std::invalid_argument("TMatrix::operator+: matrix sizes mismatch");
+    }
     TMatrix result(*this);
     for (int i = 0; i < this->Size; ++i) {
         result.pVector[i] = this->pVector[i] + mt.pVector[i];
@@ -238,6 +244,9 @@ TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt) const {
 
 template <class ValType>
 TMatrix<ValType> TMatrix<ValType>::operator-(const TMatrix& mt) const {
+    if (this->Size != mt.Size) {
+        throw std::invalid_argument("TMatrix::operator-: matrix sizes mismatch");
+    }
     TMatrix result(*this);
     for (int i = 0; i < this->Size; ++i) {
         result.pVector[i] = this->pVector[i] - mt.pVector[i];
